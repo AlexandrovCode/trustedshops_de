@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
     a = Handler()
 
-    final_data = a.Execute('A', '', '', '')
+    final_data = a.Execute('Decathlon', '', '', '')
     print(json.dumps(final_data, indent=4))
 
     elapsed_time = time.time() - start_time

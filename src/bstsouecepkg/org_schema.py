@@ -522,7 +522,119 @@ schema = {
             "type": "str",
             "name": "sourceDate",
             "must":0
-        }
+        },
+        "evidence":{
+            "type": "dict",
+            "name": "evidence",
+            "must":0,
+            "keyValue": {
+                "delay": {
+                    "type": "dict",
+                    "name": "delay",
+                    "must":0,
+                    "keyValue": {
+                        "sleep": {
+                            "type": "str",
+                            "name": "sleep",
+                            "must":0
+                        }
+                    }
+                },
+                "popup": {
+                    "type": "dict",
+                    "name": "popup",
+                    "must":0,
+                    "keyValue": {
+                        "type": {
+                            "type": "str",
+                            "name": "type",
+                            "must":0
+                        },
+                        "xpath": {
+                            "type": "str",
+                            "name": "xpath",
+                            "must":0
+                        }
+                    }
+                }
+            }
+        },
+        "rating_summary":{
+            "type": "listOfDict",
+            "name": "rating_summary",
+            "must":0,
+            "keyValue":{
+                "rating_group": {
+                    "type": "str",
+                    "name": "rating_group",
+                    "must":0
+                },
+                "ratings": {
+                    "type": "str",
+                    "name": "ratings",
+                    "must":0
+                }
+                
+            }
+        },
+        "aggregateRating":{
+            "type": "dict",
+            "name": "aggregateRating",
+            "must":0,
+            "keyValue":{
+                "reviewCount": {
+                    "type": "str",
+                    "name": "reviewCount",
+                    "must":0
+                },
+                "@type": {
+                    "type": "str",
+                    "name": "@type",
+                    "must":0
+                },
+                "ratingValue": {
+                    "type": "str",
+                    "name": "ratingValue",
+                    "must":0
+                }
+            }
+        },
+        "review":{
+            "type": "listOfDict",
+            "name": "review",
+            "must":0,
+            "keyValue":{
+                "reviewRating": {
+                    "type": "dict",
+                    "name": "reviewRating",
+                    "must":0,
+                    "keyValue":{
+                        "ratingValue":{
+                            "type": "str",
+                            "name": "ratingValue",
+                            "must":0
+                            
+                        }
+                            
+                    }
+                },
+                "datePublished": {
+                    "type": "str",
+                    "name": "datePublished",
+                    "must":0
+                },
+                "description": {
+                    "type": "str",
+                    "name": "description",
+                    "must":0
+                },
+                "author": {
+                    "type": "str",
+                    "name": "author",
+                    "must":0
+                }}
+                
+            }
     },
     "documents": {
         "date": {
@@ -791,7 +903,7 @@ schema = {
             }
         }
     },
-    "Financial_Information": {
+    "Finacial_Information": {
         "Summary_Financial_data": {
             "type": "listOfDict",
             "name": "Summary_Financial_data",

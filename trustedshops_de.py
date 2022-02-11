@@ -49,7 +49,7 @@ class Handler(Extract, GetPages):
             result.append('https://' + shop['profileUrl'])
         return result
 
-    def get_by_xpath(self, xpath):
+    def get_by_xpath(self, xpath, removeDuplicates=True):
         try:
             el = self.tree.xpath(xpath)
         except Exception as e:
@@ -59,7 +59,7 @@ class Handler(Extract, GetPages):
             if type(el) == str or type(el) == list:
                 el = [i.strip() for i in el]
                 el = [i for i in el if i != '']
-            if len(el) > 1 and type(el) == list:
+            if len(el) > 1 and type(el) == list and removeDuplicates:
                 el = list(dict.fromkeys(el))
             return el
         else:
@@ -320,6 +320,9 @@ class Handler(Extract, GetPages):
             if fieldName == 'RegulationStatusEffectiveDate':
                 self.overview['RegulationStatusEffectiveDate'] = el
 
+            if fieldName == 'logo':
+                self.overview['logo'] = el
+
     def fill_identifiers(self, xpathTradeRegistry=None, xpathOtherCompanyId=None):
         temp = {}
         if xpathTradeRegistry:
@@ -365,7 +368,7 @@ class Handler(Extract, GetPages):
             if rating:
                 temp['ratings'] = rating[0].split(' ')[0]
         if temp:
-            self.overview['rating_summary'] = temp
+            self.overview['rating_summary'] = [temp]
 
     def fillAgregateRating(self, xpathReview=None, xpathRatingValue=None):
         temp = {}
@@ -376,13 +379,15 @@ class Handler(Extract, GetPages):
         if xpathRatingValue:
             value = self.get_by_xpath(xpathRatingValue)
             if value:
+                if len(value) % 2 != 1:
+                    value.append(value[0])
                 temp['ratingValue'] = ''.join(value)
 
         if temp:
             temp['@type'] = 'aggregateRating'
             self.overview['aggregateRating'] = temp
 
-    def fillReviews(self, xpathReviews=None, xpathRatingValue=None, xpathDate=None, xpathDesc=None):
+    def fillReviews(self, xpathReviews=None, xpathRatingValue=None, xpathDate=None, xpathDesc=None, xpathAuthor=None):
         res = []
         try:
             reviews = self.tree.xpath(xpathReviews)
@@ -391,7 +396,8 @@ class Handler(Extract, GetPages):
                 if xpathRatingValue:
                     ratingsValues = len(self.tree.xpath(f'//async-list//review[{i+1}]' + xpathRatingValue))
                     if ratingsValues:
-                        temp['ratingValue'] = ratingsValues
+                        temp['reviewRating'] = {'ratingValue': str(ratingsValues)}
+
                 if xpathDate:
                     date = self.tree.xpath(f'//async-list//review[{i+1}]' + xpathDate)
                     if date:
@@ -401,6 +407,11 @@ class Handler(Extract, GetPages):
                     desc = self.tree.xpath(f'//async-list//review[{i+1}]' + xpathDesc)
                     if desc:
                         temp['description'] = desc[0]
+                if xpathAuthor:
+                    author = self.tree.xpath(f'//async-list//review[{i+1}]' + xpathAuthor)
+                    if author:
+                        author = [i for i in author if i != '\xa0']
+                        temp['author'] = ' '.join(author)
                 if temp:
                     res.append(temp)
         except:
@@ -416,13 +427,23 @@ class Handler(Extract, GetPages):
         self.get_working_tree_api(link_name, 'tree')
         #print(self.tree.xpath('//rewiew-header'))
         try:
-            self.fillField('vcard:organization-name', xpath='//div[1]/text()[contains(., "Kontakt")]/../following-sibling::div[1]/div[1]/text()')
+            self.fillField('vcard:organization-name', xpath='//div[1]/text()[contains(., "Kontakt")]/../following-sibling::div[1]//text()')
         except:
             return None
 
         self.overview['isDomiciledIn'] = 'DE'
+        #self.check_tree()
+        text = ', '.join(self.tree.xpath('//text()'))
+        #rint(text)
+        try:
+            logo = re.findall('profile_logoFullURL.+http.+jp.?g', text)[0].split(';')[-1]
+            #print(logo)
+            self.overview['logo'] = logo
+        except:
+            pass
 
-        # self.fillField('logo', xpath='')
+
+        self.fillField('logo', xpath='//shop-logo//img/@src')
 
         self.overview['bst:sourceLinks'] = [link_name]
         self.fillField('hasActivityStatus', xpath='//div[1]/text()[contains(., "Status:")]/../following-sibling::div[1]//span/text()')
@@ -451,12 +472,13 @@ class Handler(Extract, GetPages):
         self.fillReviews(xpathRatingValue='//rating-stars/span/@class[contains(., "active")]',
                          xpathReviews='//review',
                          xpathDate='//loading-line[2]/div/span/span/text()',
-                         xpathDesc='//loading-line[1]/div/div/text()')
+                         xpathDesc='//loading-line[1]/div/div/text()',
+                         xpathAuthor='//a/@class[contains(., "author-info")]/..//span//text()')
 
 
 
-        # print(self.overview)
-        # exit()
+        print(self.overview['review'])
+        #exit()
 
 
 
